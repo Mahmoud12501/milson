@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils.text import slugify
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
 # help func
 
 
@@ -30,3 +33,22 @@ class Languges(models.Model):
     def __str__(self):
         
         return str(self.languge)
+    
+    
+from django.core.mail import EmailMessage
+@receiver(post_save,sender=TranslateDb)   
+def create_profile(sender,instance,created,**kwargs):
+    if created:
+        trans=TranslateDb.objects.last()
+        message=f"to {trans.t_to} from {trans.t_from} \n{trans.file} \n{ trans.email}\n {trans.phone}"
+        # send_mail(
+        #         "translt job",
+        #          message,
+        #         trans.email,
+        #         [settings.EMAIL_HOST_USER]  
+                
+        #     )
+        
+        mail = EmailMessage( "translt job", message, settings.EMAIL_HOST_USER, [trans.email])
+        mail.attach(trans.file.name, trans.file.read(),  trans.file.content_type or "application/octet-stream")
+        mail.send()
