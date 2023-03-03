@@ -12,7 +12,7 @@ class TranslateDb(models.Model):
     t_to=models.ForeignKey('Languges',verbose_name='Translation to',related_name='trsn_to',on_delete=models.CASCADE)
     file=models.FileField('file',upload_to='files/')
     word_count=models.IntegerField('word_count')
-    phone=models.CharField(max_length=15,null=True,blank=True,unique=True)
+    phone=models.CharField(max_length=15,null=True,blank=True)
     email=models.EmailField(null=True,blank=True)
     creat_at=models.DateField(auto_now=True)
 
@@ -39,16 +39,15 @@ from django.core.mail import EmailMessage
 @receiver(post_save,sender=TranslateDb)   
 def create_profile(sender,instance,created,**kwargs):
     if created:
-        trans=TranslateDb.objects.last()
-        message=f"to {trans.t_to} from {trans.t_from} \n{trans.file} \n{ trans.email}\n {trans.phone}"
-        # send_mail(
-        #         "translt job",
-        #          message,
-        #         trans.email,
-        #         [settings.EMAIL_HOST_USER]  
-                
-        #     )
         
-        mail = EmailMessage( "translt job", message, settings.EMAIL_HOST_USER, [trans.email])
-        mail.attach(trans.file.name, trans.file.read(),  trans.file.content_type or "application/octet-stream")
-        mail.send()
+       
+        trans=TranslateDb.objects.last()
+        message=f"Dear transltor somone want translte this   file from {trans.t_from}  to {trans.t_to}  \n email: { trans.email}\n phone: {trans.phone}"
+        send_mail(
+                "translt job",
+                 message,
+                trans.email,
+                [settings.EMAIL_HOST_USER]  
+                
+            )
+        
